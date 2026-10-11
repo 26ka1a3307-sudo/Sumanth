@@ -1,0 +1,13 @@
+{
+  "name": "Calculator",
+  "short_name": "Calc",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#1f2933",
+  "theme_color": "#1f2933",
+  "icons": [
+    { "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='96' fill='%231f2933'/%3E%3Crect x='96' y='96' width='320' height='110' rx='20' fill='%2352606d'/%3E%3Ccircle cx='150' cy='290' r='34' fill='%233b4a58'/%3E%3Ccircle cx='256' cy='290' r='34' fill='%233b4a58'/%3E%3Ccircle cx='362' cy='290' r='34' fill='%23f0a030'/%3E%3Ccircle cx='150' cy='386' r='34' fill='%233b4a58'/%3E%3Ccircle cx='256' cy='386' r='34' fill='%233b4a58'/%3E%3Ccircle cx='362' cy='386' r='34' fill='%23f0a030'/%3E%3C/svg%3E", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='96' fill='%231f2933'/%3E%3Crect x='96' y='96' width='320' height='110' rx='20' fill='%2352606d'/%3E%3Ccircle cx='150' cy='290' r='34' fill='%233b4a58'/%3E%3Ccircle cx='256' cy='290' r='34' fill='%233b4a58'/%3E%3Ccircle cx='362' cy='290' r='34' fill='%23f0a030'/%3E%3Ccircle cx='150' cy='386' r='34' fill='%233b4a58'/%3E%3Ccircle cx='256' cy='386' r='34' fill='%233b4a58'/%3E%3Ccircle cx='362' cy='386' r='34' fill='%23f0a030'/%3E%3C/svg%3E", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" }
+  ]
+}
