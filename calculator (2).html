@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Calculator</title>
+<style>
+  :root { --bg:#e9ecef; --body:#f8f9fa; --key:#ffffff; --key-text:#1d2733; --op:#dfe7f5; --accent:#2f5bea; --accent-text:#fff; --screen:#1d2733; --screen-text:#f1f5f9; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#14181d; --body:#1d232b; --key:#2a323d; --key-text:#eef2f6; --op:#34405a; --accent:#5b84ff; --accent-text:#0f1620; --screen:#0f1318; }
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body { display:grid; place-items:center; background:var(--bg); font-family: "Trebuchet MS", "Segoe UI", sans-serif; }
+  .calc { width:min(92vw,340px); background:var(--body); border-radius:22px; padding:18px; box-shadow:0 10px 30px rgba(0,0,0,.18); }
+  .screen { background:var(--screen); color:var(--screen-text); border-radius:14px; padding:14px 16px; text-align:right; min-height:92px; display:flex; flex-direction:column; justify-content:flex-end; overflow:hidden; }
+  .expr { font-size:.95rem; opacity:.65; min-height:1.3em; word-break:break-all; }
+  .value { font-size:2.4rem; font-weight:600; word-break:break-all; line-height:1.15; }
+  .keys { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-top:16px; }
+  button { font:inherit; font-size:1.25rem; padding:16px 0; border:0; border-radius:12px; background:var(--key); color:var(--key-text); cursor:pointer; box-shadow:0 2px 0 rgba(0,0,0,.12); }
+  button:active { transform:translateY(1px); }
+  button:focus-visible { outline:3px solid var(--accent); outline-offset:2px; }
+  button.op { background:var(--op); }
+  button.eq { background:var(--accent); color:var(--accent-text); }
+  button.wide { grid-column:span 2; }
+</style>
+</head>
+<body>
+<main class="calc" aria-label="Calculator">
+  <div class="screen" aria-live="polite">
+    <div class="expr" id="expr"></div>
+    <div class="value" id="value">0</div>
+  </div>
+  <div class="keys" id="keys">
+    <button class="op" data-a="clear">AC</button>
+    <button class="op" data-a="back">⌫</button>
+    <button class="op" data-a="percent">%</button>
+    <button class="op" data-a="op" data-v="÷">÷</button>
+
+    <button data-a="num" data-v="7">7</button>
+    <button data-a="num" data-v="8">8</button>
+    <button data-a="num" data-v="9">9</button>
+    <button class="op" data-a="op" data-v="×">×</button>
+
+    <button data-a="num" data-v="4">4</button>
+    <button data-a="num" data-v="5">5</button>
+    <button data-a="num" data-v="6">6</button>
+    <button class="op" data-a="op" data-v="−">−</button>
+
+    <button data-a="num" data-v="1">1</button>
+    <button data-a="num" data-v="2">2</button>
+    <button data-a="num" data-v="3">3</button>
+    <button class="op" data-a="op" data-v="+">+</button>
+
+    <button data-a="sign">±</button>
+    <button data-a="num" data-v="0">0</button>
+    <button data-a="dot">.</button>
+    <button class="eq" data-a="eq">=</button>
+  </div>
+</main>
+
+<script>
+  let current = "0", prev = null, op = null, justEvaluated = false;
+  const valueEl = document.getElementById("value");
+  const exprEl = document.getElementById("expr");
+
+  function compute(a, b, o) {
+    switch (o) {
+      case "+": return a + b;
+      case "−": return a - b;
+      case "×": return a * b;
+      case "÷": return b === 0 ? NaN : a / b;
+    }
+  }
+  function fmt(n) {
+    if (!isFinite(n)) return "Cannot divide by zero";
+    return String(parseFloat(n.toPrecision(12)));
+  }
+  function render() {
+    valueEl.textContent = current;
+    exprEl.textContent = op ? `${prev} ${op}` : "";
+  }
+  function reset() { current = "0"; prev = null; op = null; justEvaluated = false; }
+
+  function press(a, v) {
+    if (current === "Cannot divide by zero") reset();
+    if (a === "num") {
+      if (justEvaluated) { current = "0"; justEvaluated = false; }
+      current = current === "0" ? v : current + v;
+    } else if (a === "dot") {
+      if (justEvaluated) { current = "0"; justEvaluated = false; }
+      if (!current.includes(".")) current += ".";
+    } else if (a === "clear") {
+      reset();
+    } else if (a === "back") {
+      current = current.length > 1 && !(current.length === 2 && current[0] === "-")
+        ? current.slice(0, -1) : "0";
+    } else if (a === "sign") {
+      if (current !== "0") current = current.startsWith("-") ? current.slice(1) : "-" + current;
+    } else if (a === "percent") {
+      current = fmt(parseFloat(current) / 100);
+    } else if (a === "op") {
+      if (op && !justEvaluated && prev !== null) {
+        const r = compute(parseFloat(prev), parseFloat(current), op);
+        current = fmt(r);
+        if (!isFinite(r)) { prev = null; op = null; render(); return; }
+      }
+      prev = current; op = v; justEvaluated = false;
+      current = "0";
+      // keep the previous value visible while typing the next one
+      valueEl.textContent = prev; exprEl.textContent = `${prev} ${op}`;
+      pendingFresh = true;
+      return;
+    } else if (a === "eq") {
+      if (op === null) return;
+      const r = compute(parseFloat(prev), parseFloat(current), op);
+      exprEl.textContent = `${prev} ${op} ${current} =`;
+      current = fmt(r);
+      prev = null; op = null; justEvaluated = true;
+      valueEl.textContent = current;
+      return;
+    }
+    render();
+  }
+  let pendingFresh = false;
+
+  document.getElementById("keys").addEventListener("click", e => {
+    const b = e.target.closest("button");
+    if (b) press(b.dataset.a, b.dataset.v);
+  });
+
+  document.addEventListener("keydown", e => {
+    const k = e.key;
+    if (/^[0-9]$/.test(k)) press("num", k);
+    else if (k === ".") press("dot");
+    else if (k === "+") press("op", "+");
+    else if (k === "-") press("op", "−");
+    else if (k === "*") press("op", "×");
+    else if (k === "/") { e.preventDefault(); press("op", "÷"); }
+    else if (k === "Enter" || k === "=") { e.preventDefault(); press("eq"); }
+    else if (k === "Backspace") press("back");
+    else if (k === "Escape") press("clear");
+    else if (k === "%") press("percent");
+  });
+</script>
+</body>
+</html>
